@@ -1,0 +1,150 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-gateway
+  namespace: cognitive
+  labels:
+    app: litellm-gateway
+    tier: ai-infrastructure
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: litellm-gateway
+  template:
+    metadata:
+      labels:
+        app: litellm-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: litellm
+          image: ghcr.io/berriai/litellm:main-latest
+          args:
+            - "--config"
+            - "/app/config.yaml"
+            - "--port"
+            - "4000"
+          ports:
+            - containerPort: 4000
+              name: http
+          env:
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secrets
+                  key: google-api-key
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secrets
+                  key: openai-api-key
+                  optional: true
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secrets
+                  key: anthropic-api-key
+                  optional: true
+            - name: REDIS_HOST
+              value: "redis-master.data.svc.cluster.local"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secrets
+                  key: master-key
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: litellm-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm-gateway
+  namespace: cognitive
+spec:
+  selector:
+    app: litellm-gateway
+  ports:
+    - port: 4000
+      targetPort: 4000
+      name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+  namespace: cognitive
+data:
+  config.yaml: |
+    model_list:
+      - model_name: gemini-pro
+        litellm_params:
+          model: gemini/gemini-pro
+          api_key: os.environ/GOOGLE_API_KEY
+      - model_name: gemini-1.5-flash
+        litellm_params:
+          model: gemini/gemini-1.5-flash
+          api_key: os.environ/GOOGLE_API_KEY
+      - model_name: gemini-1.5-pro
+        litellm_params:
+          model: gemini/gemini-1.5-pro
+          api_key: os.environ/GOOGLE_API_KEY
+      - model_name: default
+        litellm_params:
+          model: gemini/gemini-1.5-flash
+          api_key: os.environ/GOOGLE_API_KEY
+      - model_name: fast
+        litellm_params:
+          model: gemini/gemini-1.5-flash
+          api_key: os.environ/GOOGLE_API_KEY
+      - model_name: quality
+        litellm_params:
+          model: gemini/gemini-1.5-pro
+          api_key: os.environ/GOOGLE_API_KEY
+    litellm_settings:
+      cache: true
+      cache_params:
+        type: redis
+        host: os.environ/REDIS_HOST
+        port: os.environ/REDIS_PORT
+      request_timeout: 120
+      num_retries: 3
+      drop_params: true
+    router_settings:
+      routing_strategy: latency-based-routing
+      num_retries: 3
+      timeout: 120
+    general_settings:
+      master_key: os.environ/LITELLM_MASTER_KEY
+      enable_prometheus_metrics: true

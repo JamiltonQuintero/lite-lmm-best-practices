@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentación
+    url: https://github.com/Sale-ADS/sa-documentation
+    about: Revisa la documentación antes de crear un issue
+  - name: 💬 Discusiones
+    url: https://github.com/orgs/Sale-ADS/discussions
+    about: Para preguntas o discusiones generales

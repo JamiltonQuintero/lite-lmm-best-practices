@@ -1,0 +1,76 @@
+name: 🐛 Bug Report
+description: Reportar un bug o problema
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar este bug. Por favor llena la información solicitada.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción del Bug
+      description: Describe claramente cuál es el problema
+      placeholder: "El sistema muestra un error cuando..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para Reproducir
+      description: Lista los pasos para reproducir el bug
+      placeholder: |
+        1. Ir a '...'
+        2. Click en '...'
+        3. Ver error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamiento Esperado
+      description: ¿Qué debería pasar?
+      placeholder: "Debería mostrar..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamiento Actual
+      description: ¿Qué está pasando realmente?
+      placeholder: "En cambio, muestra..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severidad
+      options:
+        - 🔴 Crítico - Sistema no funciona
+        - 🟠 Alto - Funcionalidad importante afectada
+        - 🟡 Medio - Funcionalidad menor afectada
+        - 🟢 Bajo - Cosmético o mejora menor
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Pega logs de error o capturas de pantalla
+      placeholder: "```\nError logs aquí\n```"
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Información del ambiente donde ocurre
+      placeholder: |
+        - Ambiente: staging/production
+        - Browser: Chrome/Safari
+        - Versión del servicio: 1.0.0

@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  litellm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: litellm-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      # Google Gemini (Primary)
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+
+      # OpenAI (Fallback)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+
+      # Anthropic (Premium)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+
+      # Redis for caching
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+
+      # LiteLLM settings
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-litellm-master-key}
+
+      # PostgreSQL - uses internal docker network hostname
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/litellm
+
+      # Enable adding models from UI/API (stored in DB)
+      - STORE_MODEL_IN_DB=True
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - genai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: litellm-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: litellm
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - genai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d litellm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: litellm-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - genai-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+networks:
+  genai-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  postgres-data:

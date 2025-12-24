@@ -1,0 +1,51 @@
+name: ✨ Feature Request
+description: Proponer una nueva funcionalidad
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por tu sugerencia. Por favor describe la feature que propones.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema o Necesidad
+      description: ¿Qué problema resuelve esta feature?
+      placeholder: "Actualmente no podemos..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solución Propuesta
+      description: Describe cómo debería funcionar
+      placeholder: "Deberíamos poder..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: ¿Has considerado otras soluciones?
+      placeholder: "También se podría..."
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad Sugerida
+      options:
+        - 🔴 Alta - Bloquea trabajo importante
+        - 🟠 Media - Mejora significativa
+        - 🟡 Baja - Nice to have
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto Adicional
+      description: Cualquier información extra útil
+      placeholder: "Screenshots, mockups, referencias..."

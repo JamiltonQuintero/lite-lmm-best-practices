@@ -1,0 +1,16 @@
+# ==================================
+# Sale-ADS CODEOWNERS - litellm-gateway
+# ==================================
+# Owners are automatically requested for review when a PR modifies their files
+
+# Default owners for everything
+* @Sale-ADS/backend-team
+
+# DevOps owns CI/CD and infrastructure
+/.github/ @Sale-ADS/devops-team @JamiltonQuintero
+/Dockerfile @Sale-ADS/devops-team
+/docker-compose*.yml @Sale-ADS/devops-team
+/k8s/ @Sale-ADS/devops-team
+
+# Config files need senior review
+/config.yaml @Sale-ADS/senior-devs @JamiltonQuintero
